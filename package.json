@@ -6,7 +6,9 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "format": "prettier --write src",
+    "format:check": "prettier --check src"
   },
   "private": true,
   "packageManager": "npm@11.9.0",

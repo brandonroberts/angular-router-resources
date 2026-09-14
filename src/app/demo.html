@@ -1,29 +1,55 @@
-<article class="panel" [class.blocking]="blocking" [class.resources]="!blocking">
+<article #panel class="panel" [class.blocking]="blocking" [class.resources]="!blocking">
   <div class="panel-head">
     <div class="panel-title-row">
-      <h2>{{ blocking ? 'Blocking resolvers' : 'Non-blocking router resources' }}</h2>
-      <span class="status" [class.idle]="state.phase() === 'idle'" [class.done]="state.phase() === 'done'" [class.waiting]="state.phase() === 'loading' && blocking" [class.active]="state.phase() === 'loading' && !blocking">{{ status() }}</span>
+      <h2>{{ copy.heading }}</h2>
+      <span class="status" [class]="statusClass()">{{ status() }}</span>
     </div>
-    <p>{{ blocking ? 'One resolver per nested route. Angular resolves parent before child and waits for every level before activating.' : 'One independent resource per nested route, wrapped in nonBlocking(). Angular starts them concurrently without waiting for data to activate.' }}</p>
+    <p>{{ copy.description }}</p>
   </div>
   <div class="timeline">
-    <div class="time-meta"><span>{{ state.plan().length }} {{ blocking ? 'resolvers' : 'resources' }}</span><strong>{{ blocking ? '≈ ' + total() + ' ms before activation' : 'Non-blocking activation' }}</strong></div>
-    <div class="time-meta"><span>Elapsed</span><strong>{{ state.elapsed() }} ms</strong></div>
-    @for (item of state.plan(); track $index; let i = $index) {
+    <div class="time-meta">
+      <span>{{ state.plan().length }} {{ copy.unit }}s</span><strong>{{ expectation() }}</strong>
+    </div>
+    <div class="time-meta">
+      <span>Elapsed</span><strong>{{ state.elapsed() }} ms</strong>
+    </div>
+    @for (item of state.plan(); track item.label; let i = $index) {
       <div class="lane">
-        <div class="lane-label"><span>{{ item.label }} {{ blocking ? 'resolver' : 'resource' }} <small>{{ item.duration }} ms</small></span><span>{{ state.progress()[i] }}%</span></div>
-        <div class="track" role="progressbar" [attr.aria-label]="item.label + ' request progress'" aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="state.progress()[i]"><div class="fill" [style.width.%]="state.progress()[i]"></div></div>
+        <div class="lane-label">
+          <span
+            >{{ item.label }} {{ copy.unit }} <small>{{ item.duration }} ms</small></span
+          ><span>{{ state.progress()[i] }}%</span>
+        </div>
+        <div
+          class="track"
+          role="progressbar"
+          [attr.aria-label]="item.label + ' request progress'"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          [attr.aria-valuenow]="state.progress()[i]"
+        >
+          <div class="fill" [style.width.%]="state.progress()[i]"></div>
+        </div>
       </div>
     }
-    <div class="sequence">{{ blocking ? state.plan().length + ' nested requests → activate route' : 'Start resources → activate without waiting → render results' }}</div>
+    <div class="sequence">{{ sequence() }}</div>
   </div>
   <div class="browser" aria-label="Route preview">
-    <div class="browser-bar"><i class="browser-dot"></i><i class="browser-dot"></i><i class="browser-dot"></i><span class="url">app.dev/dashboard</span></div>
+    <div class="browser-bar">
+      <i class="browser-dot"></i><i class="browser-dot"></i><i class="browser-dot"></i
+      ><span class="url">app.dev/dashboard</span>
+    </div>
     <div class="viewport">
       <router-outlet (activate)="onActivate($event)" />
-      @if (state.error()) { <p class="error" role="alert">{{ state.error() }}</p> }
+      @if (state.error()) {
+        <p class="error" role="alert">{{ state.error() }}</p>
+      }
     </div>
   </div>
-  <div class="formula"><code>{{ blocking ? 'activation ≈ sum(nested request times)' : 'all data ready ≈ max(independent request times)' }}</code></div>
-  <span class="sr-only" aria-live="polite">{{ state.phase() === 'done' ? 'Complete. All data loaded.' : '' }}</span>
+  <div class="formula">
+    <code>{{ copy.formula }}</code>
+  </div>
+  <span class="sr-only" aria-live="polite">{{
+    state.phase() === 'done' ? 'Complete. All data loaded.' : ''
+  }}</span>
 </article>

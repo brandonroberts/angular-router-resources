@@ -1,18 +1,37 @@
 import { TestBed } from '@angular/core/testing';
-import { provideRouter, withComponentInputBinding, withDisabledInitialNavigation, withRouterResources } from '@angular/router';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withDisabledInitialNavigation,
+  withRouterResources,
+} from '@angular/router';
 import { By } from '@angular/platform-browser';
 import { vi } from 'vitest';
 import { Demo } from './demo';
 import { createScenario } from './scenario';
-import { ResolvedLevel, ResourceLevel } from './route-views';
+import { ResolvedLevel } from './resolved-level';
+import { ResourceLevel } from './resource-level';
 import { createDemoRoutes } from './demo.routes';
 
 describe('Real Angular routing comparison', () => {
   beforeEach(() => {
-    vi.stubGlobal('ResizeObserver', class { observe() {} disconnect() {} });
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        disconnect() {}
+      },
+    );
     TestBed.configureTestingModule({
       imports: [Demo],
-      providers: [provideRouter([], withDisabledInitialNavigation(), withComponentInputBinding(), withRouterResources())],
+      providers: [
+        provideRouter(
+          [],
+          withDisabledInitialNavigation(),
+          withComponentInputBinding(),
+          withRouterResources(),
+        ),
+      ],
     });
   });
   afterEach(() => {
@@ -27,8 +46,8 @@ describe('Real Angular routing comparison', () => {
       fixture.detectChanges();
       const demo = fixture.componentInstance;
       const requests = [
-        {label: 'Parent', duration: 40, factor: 0},
-        {label: 'Child', duration: 60, factor: 1},
+        { label: 'Parent', duration: 40, factor: 0 },
+        { label: 'Child', duration: 60, factor: 1 },
       ];
       const originalLoad = demo.state.load.bind(demo.state);
       const previousComplete: boolean[] = [];
@@ -41,18 +60,24 @@ describe('Real Angular routing comparison', () => {
       expect(load).toHaveBeenCalledTimes(2);
       expect(previousComplete).toEqual([mode === 'resolver']);
       expect(demo.state.active()).toBe(true);
-      const levels = fixture.debugElement.queryAll(By.directive(mode === 'resolver' ? ResolvedLevel : ResourceLevel));
+      const levels = fixture.debugElement.queryAll(
+        By.directive(mode === 'resolver' ? ResolvedLevel : ResourceLevel),
+      );
       expect(levels.length).toBe(requests.length);
       if (mode === 'resolver') {
         expect(demo.state.completed()).toEqual([true, true]);
-        expect(levels[0].componentInstance.request()).toEqual({label: 'Parent', duration: 40, message: 'Loaded in 40 ms'});
+        expect(levels[0].componentInstance.request()).toEqual({
+          label: 'Parent',
+          duration: 40,
+          message: 'Loaded in 40 ms',
+        });
       } else {
         // Navigation activates without waiting for either resource.
         expect(demo.state.completed().every(Boolean)).toBe(false);
         expect(levels[0].componentInstance.request().isLoading()).toBe(true);
         expect(fixture.nativeElement.querySelectorAll('.skeleton').length).toBe(2);
       }
-      await new Promise(resolve => setTimeout(resolve, 120));
+      await new Promise((resolve) => setTimeout(resolve, 120));
       fixture.detectChanges();
       expect(demo.state.completed()).toEqual([true, true]);
       expect(demo.state.phase()).toBe('done');
@@ -80,12 +105,16 @@ describe('Real Angular routing comparison', () => {
 
   it('builds the configured count of real nested route entries for each panel', () => {
     for (const count of [2, 4, 6]) {
-      const plan = Array.from({length: count}, (_, index) => ({label: `Level ${index}`, duration: 300 + index * 100, factor: 0}));
+      const plan = Array.from({ length: count }, (_, index) => ({
+        label: `Level ${index}`,
+        duration: 300 + index * 100,
+        factor: 0,
+      }));
       for (const mode of ['resolver', 'resources'] as const) {
-        const {routes, url} = createDemoRoutes(plan, mode, 7);
+        const { routes, url } = createDemoRoutes(plan, mode, 7);
         let level = routes[1];
         for (let index = 0; index < count; index++) {
-          expect(level.data).toEqual({level: index, label: plan[index].label});
+          expect(level.data).toEqual({ level: index, label: plan[index].label });
           expect(Boolean(level.resolve)).toBe(mode === 'resolver');
           expect(Boolean(level.resources)).toBe(mode === 'resources');
           if (index < count - 1) level = level.children![0];
@@ -102,14 +131,22 @@ describe('Real Angular routing comparison', () => {
     fixture.detectChanges();
     const demo = fixture.componentInstance;
     const completions: (() => void)[] = [];
-    vi.spyOn(demo.state, 'load').mockImplementation(index => new Promise(resolve => {
-      completions[index] = () => resolve({label: index ? 'Child' : 'Parent', duration: 300, message: `Actual payload ${index}`});
-    }));
+    vi.spyOn(demo.state, 'load').mockImplementation(
+      (index) =>
+        new Promise((resolve) => {
+          completions[index] = () =>
+            resolve({
+              label: index ? 'Child' : 'Parent',
+              duration: 300,
+              message: `Actual payload ${index}`,
+            });
+        }),
+    );
     await demo.start(createScenario(300, 300).slice(0, 2), true);
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('.skeleton').length).toBe(2);
     completions[1]();
-    await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('.skeleton').length).toBe(1);
     expect(fixture.nativeElement.textContent).toContain('Actual payload 1');
@@ -122,21 +159,22 @@ describe('Real Angular routing comparison', () => {
     fixture.destroy();
   });
 
-  for (const mode of ['resolver', 'resources']) it('cancels an in-flight ' + mode + ' run when the scenario changes', async () => {
-    history.replaceState(null, '', '/?demo=' + mode);
-    const fixture = TestBed.createComponent(Demo);
-    fixture.detectChanges();
-    const demo = fixture.componentInstance;
-    const plan = createScenario(300, 300);
-    const pending = demo.start(plan, true);
-    await new Promise(resolve => setTimeout(resolve, 20));
-    await demo.start(plan, false);
-    await pending;
-    expect(demo.state.phase()).toBe('idle');
-    expect(demo.state.active()).toBe(false);
-    expect(demo.state.completed().some(Boolean)).toBe(false);
-    fixture.destroy();
-  });
+  for (const mode of ['resolver', 'resources'])
+    it('cancels an in-flight ' + mode + ' run when the scenario changes', async () => {
+      history.replaceState(null, '', '/?demo=' + mode);
+      const fixture = TestBed.createComponent(Demo);
+      fixture.detectChanges();
+      const demo = fixture.componentInstance;
+      const plan = createScenario(300, 300);
+      const pending = demo.start(plan, true);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      await demo.start(plan, false);
+      await pending;
+      expect(demo.state.phase()).toBe('idle');
+      expect(demo.state.active()).toBe(false);
+      expect(demo.state.completed().some(Boolean)).toBe(false);
+      fixture.destroy();
+    });
 
   it('keeps the previous routed component until every nested resolver finishes', async () => {
     history.replaceState(null, '', '/?demo=resolver');
@@ -144,9 +182,17 @@ describe('Real Angular routing comparison', () => {
     fixture.detectChanges();
     const demo = fixture.componentInstance;
     const completions: (() => void)[] = [];
-    const load = vi.spyOn(demo.state, 'load').mockImplementation(index => new Promise(resolve => {
-      completions[index] = () => resolve({label: `Level ${index}`, duration: 300, message: `Resolver payload ${index}`});
-    }));
+    const load = vi.spyOn(demo.state, 'load').mockImplementation(
+      (index) =>
+        new Promise((resolve) => {
+          completions[index] = () =>
+            resolve({
+              label: `Level ${index}`,
+              duration: 300,
+              message: `Resolver payload ${index}`,
+            });
+        }),
+    );
     const pending = demo.start(createScenario(300, 300).slice(0, 2), true);
     await vi.waitFor(() => expect(load).toHaveBeenCalledTimes(1));
     fixture.detectChanges();

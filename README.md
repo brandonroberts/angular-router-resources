@@ -41,6 +41,14 @@ npm run build
 
 This compiles the project and stores the static application in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+## Formatting
+
+```sh
+npm run format
+```
+
+Prettier settings live in `.prettierrc`; `npm run format:check` verifies without writing.
+
 ## Running unit tests
 
 To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:

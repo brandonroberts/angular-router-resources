@@ -1,10 +1,20 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter, withComponentInputBinding, withDisabledInitialNavigation, withRouterResources } from '@angular/router';
+import {
+  provideRouter,
+  withComponentInputBinding,
+  withDisabledInitialNavigation,
+  withRouterResources,
+} from '@angular/router';
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideRouter(routes, withDisabledInitialNavigation(), withComponentInputBinding(), withRouterResources())
-  ]
+    provideRouter(
+      routes,
+      withDisabledInitialNavigation(),
+      withComponentInputBinding(),
+      withRouterResources(),
+    ),
+  ],
 };

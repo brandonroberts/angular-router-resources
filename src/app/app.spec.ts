@@ -6,8 +6,7 @@ describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-    })
-      .compileComponents();
+    }).compileComponents();
   });
 
   it('should create the app', () => {
@@ -32,24 +31,45 @@ describe('App', () => {
     const resources = (root.querySelector('#resources-frame') as HTMLIFrameElement).contentWindow!;
     const resolverMessage = vi.spyOn(resolver, 'postMessage');
     const resourceMessage = vi.spyOn(resources, 'postMessage');
-    for (const [mode, source] of [['resolver', resolver], ['resources', resources]] as const) {
-      app.onMessage(new MessageEvent('message', {origin: location.origin, source, data: {type: 'ready', mode}}));
+    for (const [mode, source] of [
+      ['resolver', resolver],
+      ['resources', resources],
+    ] as const) {
+      app.onMessage(
+        new MessageEvent('message', {
+          origin: location.origin,
+          source,
+          data: { type: 'ready', mode },
+        }),
+      );
     }
     const slider = root.querySelector('#parent-delay') as HTMLInputElement;
     slider.value = '1700';
     slider.dispatchEvent(new Event('input'));
     fixture.detectChanges();
     expect(app.plan()[0].duration).toBe(1700);
-    expect(resolverMessage).toHaveBeenLastCalledWith({type: 'configure', plan: app.plan()}, location.origin);
-    expect(resourceMessage).toHaveBeenLastCalledWith({type: 'configure', plan: app.plan()}, location.origin);
+    expect(resolverMessage).toHaveBeenLastCalledWith(
+      { type: 'configure', plan: app.plan() },
+      location.origin,
+    );
+    expect(resourceMessage).toHaveBeenLastCalledWith(
+      { type: 'configure', plan: app.plan() },
+      location.origin,
+    );
     resolverMessage.mockClear();
     resourceMessage.mockClear();
     (root.querySelector('button.resolver') as HTMLButtonElement).click();
-    expect(resolverMessage).toHaveBeenCalledExactlyOnceWith({type: 'play', plan: app.plan()}, location.origin);
+    expect(resolverMessage).toHaveBeenCalledExactlyOnceWith(
+      { type: 'play', plan: app.plan() },
+      location.origin,
+    );
     expect(resourceMessage).not.toHaveBeenCalled();
     resolverMessage.mockClear();
     (root.querySelector('button.resource') as HTMLButtonElement).click();
-    expect(resourceMessage).toHaveBeenCalledExactlyOnceWith({type: 'play', plan: app.plan()}, location.origin);
+    expect(resourceMessage).toHaveBeenCalledExactlyOnceWith(
+      { type: 'play', plan: app.plan() },
+      location.origin,
+    );
     expect(resolverMessage).not.toHaveBeenCalled();
   });
 });
