@@ -1,0 +1,37 @@
+<main class="shell">
+  <header class="brandbar">
+    <img src="angular-gradient.png" alt="Angular">
+    <div class="brand-copy">
+      <p class="eyebrow">Angular Router · {{ version }}</p>
+      <h1>Angular Router Data Fetching</h1>
+      <p class="intro">Set the endpoint request times, generate a route hierarchy, then play either approach independently. Both use real Angular navigation with simulated request latency.</p>
+    </div>
+  </header>
+  <section class="controls" aria-label="Simulation controls">
+    <div class="control">
+      <label for="parent-delay"><span>Parent data</span><output>{{ parentDelay() }} ms</output></label>
+      <input id="parent-delay" type="range" min="300" max="2400" step="100" [value]="parentDelay()" (input)="setDelay('parent', $event)">
+    </div>
+    <div class="control">
+      <label for="child-delay"><span>Child data</span><output>{{ childDelay() }} ms</output></label>
+      <input id="child-delay" type="range" min="300" max="2400" step="100" [value]="childDelay()" (input)="setDelay('child', $event)">
+    </div>
+    <div class="actions" aria-label="Playback controls">
+      <button class="run resolver" [disabled]="!ready().resolver" (click)="play('resolver')">{{ played().resolver ? '↻ Replay resolver' : '▶ Play resolver' }}</button>
+      <button class="run resource" [disabled]="!ready().resources" (click)="play('resources')">{{ played().resources ? '↻ Replay router resources' : '▶ Play router resources' }}</button>
+    </div>
+    <div class="scenario">
+      <span>Current scenario: <strong>{{ plan().length }} matched route levels</strong></span>
+      <button class="randomize" (click)="randomize()">↻ Randomize route</button>
+    </div>
+  </section>
+  <div class="summary"><div class="legend">
+    <span><i class="dot blocking" aria-hidden="true"></i>Nested resolvers · blocking</span>
+    <span><i class="dot resource" aria-hidden="true"></i>Independent resources · nonBlocking()</span>
+  </div></div>
+  <section class="comparison" aria-label="Navigation behavior comparison">
+    <iframe id="resolver-frame" class="frame" title="Blocking resolvers demonstration" src="?demo=resolver" [style.height.px]="heights().resolver"></iframe>
+    <iframe id="resources-frame" class="frame" title="Non-blocking router resources demonstration" src="?demo=resources" [style.height.px]="heights().resources"></iframe>
+  </section>
+  <p class="takeaway"><strong>This scenario:</strong> one request per nested route, all independent. Resolvers on the same route can run concurrently. Router resources are blocking by default; this demo explicitly uses <code>nonBlocking()</code> to show loading states after activation. Each panel has its own Angular Router for independent playback. <a href="https://next.angular.dev/guide/routing/data-fetching-with-resources" target="_blank" rel="noopener">Angular documentation</a></p>
+</main>
