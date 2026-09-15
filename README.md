@@ -57,6 +57,12 @@ To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use th
 npm test -- --watch=false
 ```
 
+## Deployment
+
+Every push to `main` runs `.github/workflows/deploy.yml`, which tests, builds with the repository
+name as the base href, and publishes `dist/client` to GitHub Pages:
+https://brandonroberts.github.io/angular-router-resources/
+
 ## Code scaffolding
 
 Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
